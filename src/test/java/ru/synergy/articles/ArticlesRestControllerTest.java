@@ -1,7 +1,8 @@
 package ru.synergy.articles;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -18,15 +19,15 @@ import java.util.List;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ArticlesRestControllerTest {
+    private static final Logger log = LoggerFactory.getLogger(ArticlesRestControllerTest.class);
     @Autowired
     private TestRestTemplate restTemplate;
 
     @Autowired
     private ArticleRepository repository;
 
-    @Test
-    public void getByTitleTest() {
-        //setup(given)
+    @BeforeEach
+    public void setRepository() {
         repository.deleteAll();
 
         Article article1 = new Article("Sport", "Box1", "Denis1", 7);
@@ -40,8 +41,13 @@ public class ArticlesRestControllerTest {
         repository.save(article3);
         repository.save(article4);
         repository.save(article5);
+    }
 
+
+    @Test
+    public void getByTitleTest() {
         //when
+        //Тест с сортировкой с повышением рейтинга
         try {
             ResponseEntity<List<Article>> responseEntity1 = restTemplate.exchange(
                     new RequestEntity<>(HttpMethod.GET, new URI("/articles/title/rating/up?title=Sport")),
@@ -60,6 +66,7 @@ public class ArticlesRestControllerTest {
             throw new RuntimeException(e);
         }
 
+        //Тест с сортировкой с понижением рейтинга
         try {
             ResponseEntity<List<Article>> responseEntity2 = restTemplate.exchange(
                     new RequestEntity<>(HttpMethod.GET, new URI("/articles/title/rating/down?title=Sport")),
